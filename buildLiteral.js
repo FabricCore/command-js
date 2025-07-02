@@ -7,6 +7,8 @@ function buildLiteral(tree) {
     let command = ClientCommandManager.literal(tree.name);
 
     switch (typeof tree.execute) {
+        case "undefined":
+            break;
         case "string":
             // TODO load the damn file
             break;

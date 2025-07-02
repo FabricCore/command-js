@@ -1,12 +1,14 @@
 let ClientCommandManager =
     Packages.net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 
-let buildLiteral = module.require("./buildLiteral");
+let buildLiteral = module.require("./buildLiteral", "lazy");
 
 function buildArgument(tree) {
     let command = ClientCommandManager.argument(tree.name, tree.type);
 
     switch (typeof tree.execute) {
+        case "undefined":
+            break;
         case "string":
             // TODO load the damn file
             break;
