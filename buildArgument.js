@@ -1,10 +1,30 @@
 let ClientCommandManager =
     Packages.net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+let SuggestionProvider = com.mojang.brigadier.suggestion.SuggestionProvider;
 
 let buildLiteral = module.require("./buildLiteral", "lazy");
 
 function buildArgument(tree) {
     let command = ClientCommandManager.argument(tree.name, tree.type);
+
+    if (tree.suggests) {
+        switch (typeof tree.suggests) {
+            case "function":
+                let suggests = new SuggestionProvider({
+                    getSuggestions: function (context, builder) {
+                        for (let item of tree.suggests(context)) {
+                            builder.suggest(item);
+                        }
+                        return builder.buildFuture();
+                    },
+                });
+
+                command = command.suggests(suggests);
+                break;
+            default:
+                command = command.suggests(tree.suggests);
+        }
+    }
 
     switch (typeof tree.execute) {
         case "undefined":

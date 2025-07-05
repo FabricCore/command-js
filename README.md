@@ -20,6 +20,9 @@ command.register({
       execute: () => {
         /* ... */
       },
+      suggests: () => [
+        /* list of items to suggest */
+      ],
 
       args: {
         /* ... */
