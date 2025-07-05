@@ -2,12 +2,17 @@ let ClientCommandRegistrationCallback =
     Packages.net.fabricmc.fabric.api.client.command.v2
         .ClientCommandRegistrationCallback;
 
-let { registerInternal } = module.require("./");
+module.globals.command ??= {};
+module.globals.command.registerInternal = module.require("./").registerInternal;
 
-let callback = new ClientCommandRegistrationCallback({
-    register: function (dispatcher, registry) {
-        registerInternal(dispatcher, registry);
-    },
-});
+if (!(module.globals.command ?? {}).registered) {
+    let callback = new ClientCommandRegistrationCallback({
+        register: function (dispatcher, registry) {
+            module.globals.command.registerInternal(dispatcher, registry);
+        },
+    });
 
-ClientCommandRegistrationCallback.EVENT.register(callback);
+    ClientCommandRegistrationCallback.EVENT.register(callback);
+}
+
+module.globals.command.registered = true;
