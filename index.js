@@ -3,6 +3,7 @@
 let fullTree = {};
 
 let buildLiteral = module.require("./buildLiteral");
+let cacheLiteral = module.require("./buildCache");
 
 function testName(tree) {
     if (tree === undefined) return;
@@ -29,24 +30,29 @@ function register(argTree) {
         );
         return false;
     }
+    module.globals.command.cacheTree ??= {};
+    cacheLiteral(argTree, [argTree.name]);
     fullTree[argTree.name] = argTree;
 }
 
 function registerInternal(dispatcher, _registry) {
-    for (let subtree of Object.values(fullTree)) {
+    for (let [name, subtree] of Object.entries(fullTree)) {
         try {
-            dispatcher.register(buildLiteral(subtree));
+            dispatcher.register(buildLiteral(subtree, [name]));
         } catch (e) {
             console.error(
                 `Failed to register command ${subtree.name}.\nCause ${e}`,
             );
         }
     }
+}
 
+function deregisterAll() {
     fullTree = {};
 }
 
 module.exports = {
     register,
     registerInternal,
+    deregisterAll,
 };

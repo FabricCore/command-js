@@ -4,37 +4,53 @@ let SuggestionProvider = com.mojang.brigadier.suggestion.SuggestionProvider;
 
 let buildLiteral = module.require("./buildLiteral", "lazy");
 
-function buildArgument(tree) {
+function buildArgument(tree, identifier) {
     let command = ClientCommandManager.argument(tree.name, tree.type);
 
     if (tree.suggests) {
-        switch (typeof tree.suggests) {
-            case "function":
-                let suggests = new SuggestionProvider({
-                    getSuggestions: function (context, builder) {
-                        for (let item of tree.suggests(context)) {
+        if (
+            typeof tree.suggests == "function" ||
+            Array.isArray(tree.suggests)
+        ) {
+            let suggests = new SuggestionProvider({
+                getSuggestions: function (context, builder) {
+                    try {
+                        let suggestions = tree.suggests;
+                        if (typeof tree.suggests == "function") {
+                            suggestions = tree.suggests(context);
+                        }
+
+                        for (let item of suggestions) {
                             builder.suggest(item);
                         }
-                        return builder.buildFuture();
-                    },
-                });
+                    } catch (e) {
+                        console.error(
+                            "An error has occured when generating suggestions, please contact package maintainer.",
+                        );
+                        console.error(`Cause: ${e}`);
+                    }
+                    return builder.buildFuture();
+                },
+            });
 
-                command = command.suggests(suggests);
-                break;
-            default:
-                command = command.suggests(tree.suggests);
+            command = command.suggests(suggests);
+        } else {
+            command = command.suggests(tree.suggests);
         }
     }
 
     switch (typeof tree.execute) {
         case "undefined":
             break;
-        case "string":
-            // TODO load the damn file
-            break;
         case "function":
-            command = command.executes(tree.execute);
+            let currentIdentifier = identifier.join(" ");
+            command = command.executes(
+                (ctx) =>
+                    module.globals.command.cacheTree[currentIdentifier](ctx) ??
+                    1,
+            );
             break;
+        case "string":
         default:
             throw new Error(
                 `Command.execute should be string or function, got ${tree.execute}`,
@@ -46,12 +62,14 @@ function buildArgument(tree) {
 
     for (let [name, value] of Object.entries(tree.args)) {
         value.name = name;
-        command = command.then(buildArgument(value));
+        command = command.then(
+            buildArgument(value, identifier.concat([`<${name}>`])),
+        );
     }
 
     for (let [name, value] of Object.entries(tree.subcommands)) {
         value.name = name;
-        command = command.then(buildLiteral(value));
+        command = command.then(buildLiteral(value, identifier.concat(name)));
     }
 
     return command;
