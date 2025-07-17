@@ -19,65 +19,65 @@ function addArgType(name, treeToType, ctxToArg) {
 addArgType(
     "bool",
     () => BoolArgumentType.bool(),
-    (ctx, name) => BoolArgumentType.getBool(ctx, name),
+    (ctx, name) => BoolArgumentType.getBool(ctx, name) && true,
 );
 
 addArgType(
     "double",
     ({ min, max }) =>
         DoubleArgumentType.doubleArg(
-            min ?? -java.lang.Double.MAX,
-            max ?? java.lang.Double.MAX,
+            min ?? -java.lang.Double.MIN_VALUE,
+            max ?? java.lang.Double.MAX_VALUE,
         ),
-    (ctx, name) => DoubleArgumentType.getDouble(ctx, name),
+    (ctx, name) => DoubleArgumentType.getDouble(ctx, name) + 0,
 );
 
 addArgType(
     "float",
     ({ min, max }) =>
         FloatArgumentType.floatArg(
-            min ?? -java.lang.Float.MAX,
-            max ?? java.lang.Float.MAX,
+            min ?? -java.lang.Float.MIN_VALUE,
+            max ?? java.lang.Float.MAX_VALUE,
         ),
-    (ctx, name) => FloatArgumentType.getFloat(ctx, name),
+    (ctx, name) => FloatArgumentType.getFloat(ctx, name) + 0,
 );
 
 addArgType(
     "int",
     ({ min, max }) =>
         IntegerArgumentType.integer(
-            min ?? java.lang.Integer.MIN,
-            max ?? java.lang.Integer.MAX,
+            min ?? java.lang.Integer.MIN_VALUE,
+            max ?? java.lang.Integer.MAX_VALUE,
         ),
-    (ctx, name) => IntegerArgumentType.getInteger(ctx, name),
+    (ctx, name) => IntegerArgumentType.getInteger(ctx, name) + 0,
 );
 
 addArgType(
     "long",
     ({ min, max }) =>
         LongArgumentType.integer(
-            min ?? java.lang.Long.MIN,
-            max ?? java.lang.Long.MAX,
+            min ?? java.lang.Long.MIN_VALUE,
+            max ?? java.lang.Long.MAX_VALUE,
         ),
-    (ctx, name) => LongArgumentType.getLong(ctx, name),
+    (ctx, name) => LongArgumentType.getLong(ctx, name) + 0,
 );
 
 addArgType(
     "word",
     () => StringArgumentType.word(),
-    (ctx, name) => StringArgumentType.getString(ctx, name),
+    (ctx, name) => StringArgumentType.getString(ctx, name) + "",
 );
 
 addArgType(
     "string",
     () => StringArgumentType.string(),
-    (ctx, name) => StringArgumentType.getString(ctx, name),
+    (ctx, name) => StringArgumentType.getString(ctx, name) + "",
 );
 
 addArgType(
     "greedy",
     () => StringArgumentType.greedyString(),
-    (ctx, name) => StringArgumentType.getString(ctx, name),
+    (ctx, name) => StringArgumentType.getString(ctx, name) + "",
 );
 
 function treeToType(tree) {

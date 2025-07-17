@@ -4,9 +4,15 @@ let SuggestionProvider = com.mojang.brigadier.suggestion.SuggestionProvider;
 
 let { ctxToArg, treeToType } = module.require("./argTypes");
 
-let buildLiteral = module.require("./buildLiteral", "lazy");
-
 function buildArgument(tree, identifier, argStack) {
+    if (tree.type == undefined) {
+        tree.type = "greedy";
+        console.error(
+            `Command ${identifier.join("::")} does not have an argument type.`,
+        );
+        let command = ClientCommandManager.literal("missingArgumentType");
+        return command;
+    }
     let command = ClientCommandManager.argument(tree.name, treeToType(tree));
 
     if (tree.suggests) {
@@ -87,12 +93,16 @@ function buildArgument(tree, identifier, argStack) {
     for (let [name, value] of Object.entries(tree.subcommands)) {
         value.name = name;
         command = command.then(
-            buildLiteral(value, identifier.concat(name)),
-            argStack,
+            module.globals.command.buildLiteral(
+                value,
+                identifier.concat(name),
+                argStack,
+            ),
         );
     }
 
     return command;
 }
 
-module.exports = buildArgument;
+module.globals.command ??= {};
+module.globals.command.buildArgument = buildArgument;

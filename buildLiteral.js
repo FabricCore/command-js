@@ -1,8 +1,6 @@
 let ClientCommandManager =
     Packages.net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 
-let buildArgument = module.require("./buildArgument");
-
 function buildLiteral(tree, identifier, argStack = []) {
     let command = ClientCommandManager.literal(tree.name);
 
@@ -41,7 +39,7 @@ function buildLiteral(tree, identifier, argStack = []) {
     for (let [name, value] of Object.entries(tree.args)) {
         value.name = name;
         command = command.then(
-            buildArgument(
+            module.globals.command.buildArgument(
                 value,
                 identifier.concat([`<${name}>`]),
                 argStack.concat([[name, value.type]]),
@@ -59,4 +57,4 @@ function buildLiteral(tree, identifier, argStack = []) {
     return command;
 }
 
-module.exports = buildLiteral;
+module.globals.command.buildLiteral = buildLiteral;

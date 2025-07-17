@@ -4,7 +4,8 @@ const { addArgType } = require("./argTypes");
 
 let fullTree = {};
 
-let buildLiteral = module.require("./buildLiteral");
+module.require("./buildLiteral");
+module.require("./buildArgument");
 let cacheLiteral = module.require("./buildCache");
 
 function testName(tree) {
@@ -40,7 +41,9 @@ function register(argTree) {
 function registerInternal(dispatcher, _registry) {
     for (let [name, subtree] of Object.entries(fullTree)) {
         try {
-            dispatcher.register(buildLiteral(subtree, [name]));
+            dispatcher.register(
+                module.globals.command.buildLiteral(subtree, [name]),
+            );
         } catch (e) {
             console.error(
                 `Failed to register command ${subtree.name}.\nCause ${e}`,
