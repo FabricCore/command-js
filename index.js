@@ -1,5 +1,7 @@
 // as taken from https://github.com/FabricCore/bootstrap.js/blob/master/sys/command.js
 
+const { addArgType } = require("./argTypes");
+
 let fullTree = {};
 
 let buildLiteral = module.require("./buildLiteral");
@@ -55,4 +57,5 @@ module.exports = {
     register,
     registerInternal,
     deregisterAll,
+    addArgType: module.require("./argTypes").addArgType,
 };
