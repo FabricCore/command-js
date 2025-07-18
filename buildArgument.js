@@ -15,21 +15,32 @@ function buildArgument(tree, identifier, argStack) {
     }
     let command = ClientCommandManager.argument(tree.name, treeToType(tree));
 
+    let isNewSpec = argStack.every(([_, type]) => typeof type == "string");
+
     if (tree.suggests) {
         if (
             typeof tree.suggests == "function" ||
             Array.isArray(tree.suggests)
         ) {
             let suggests = new SuggestionProvider({
-                getSuggestions: function (context, builder) {
+                getSuggestions: function (...args) {
                     try {
                         let suggestions = tree.suggests;
                         if (typeof tree.suggests == "function") {
-                            suggestions = tree.suggests(context);
+                            suggestions = tree.suggests.apply(
+                                null,
+                                isNewSpec
+                                    ? argStack
+                                          .slice(0, -1)
+                                          .map(([name, type]) =>
+                                              ctxToArg(args[0], type, name),
+                                          )
+                                    : args,
+                            );
                         }
 
                         for (let item of suggestions) {
-                            builder.suggest(item);
+                            args[1].suggest(item);
                         }
                     } catch (e) {
                         console.error(
@@ -37,7 +48,7 @@ function buildArgument(tree, identifier, argStack) {
                         );
                         console.error(`Cause: ${e}`);
                     }
-                    return builder.buildFuture();
+                    return args[1].buildFuture();
                 },
             });
 
@@ -52,10 +63,6 @@ function buildArgument(tree, identifier, argStack) {
             break;
         case "function":
             let currentIdentifier = identifier.join(" ");
-            let isNewSpec = argStack.every(
-                ([_, type]) => typeof type == "string",
-            );
-
             command = command.executes(function (...args) {
                 return (
                     module.globals.command.cacheTree[currentIdentifier].apply(
